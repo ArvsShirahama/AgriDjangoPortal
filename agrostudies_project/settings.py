@@ -200,10 +200,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'merlielatosa@gmail.com'
-EMAIL_HOST_PASSWORD = 'qfiuwjpfqiangjvs'  # Gmail App Password (no spaces)
+EMAIL_HOST_USER = 'arvs.bulatao.08@gmail.com'
+EMAIL_HOST_PASSWORD = 'sbjnjfpzxpceidbt'  # Gmail App Password (no spaces)
 EMAIL_TIMEOUT = 10
-DEFAULT_FROM_EMAIL = 'Agrostudies <merlielatosa@gmail.com>'
+DEFAULT_FROM_EMAIL = 'Agrostudies <arvs.bulatao.08@gmail.com>'
 
 # Log email config (hide password)
 print(f"[EMAIL CONFIG] SMTP: {EMAIL_HOST}:{EMAIL_PORT} User: {EMAIL_HOST_USER}")
