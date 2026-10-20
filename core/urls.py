@@ -71,6 +71,7 @@ urlpatterns = [
     path('candidates/<int:candidate_id>/cancel/', views.cancel_application, name='cancel_application'),
     path('candidates/<int:candidate_id>/status/<str:status>/', views.update_candidate_status, name='update_candidate_status'),
     path('candidates/<int:candidate_id>/validate/', views.validate_candidate, name='validate_candidate'),
+    path('candidates/<int:candidate_id>/send-status-email/', views.send_candidate_status_email, name='send_candidate_status_email'),
     
     # Export candidates
     path('candidates/export/csv/', views.export_candidates_csv, name='export_candidates_csv'),

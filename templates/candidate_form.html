@@ -289,7 +289,7 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.passport_scan.id_for_label }}" class="form-label">Passport Scan <span class="badge bg-warning text-dark">Required</span></label>
+                            <label for="{{ form.passport_scan.id_for_label }}" class="form-label">Passport Scan <span class="text-danger" style="color: red;">*</span></label>
                             {% if candidate and candidate.passport_scan %}
                                 <div class="mb-2">
                                     <span class="badge bg-success">Document uploaded</span>
@@ -473,7 +473,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.tor.id_for_label }}" class="form-label">Transcript of Records (TOR) <span class="badge bg-warning text-dark">Required</span></label>
+                            <label for="{{ form.tor.id_for_label }}" class="form-label">Transcript of Records (TOR) <span class="text-danger" style="color: red;">*</span></label>
                             {% if candidate and candidate.tor %}
                                 <div class="mb-2">
                                     <span class="badge bg-success">Document uploaded</span>
@@ -507,7 +507,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.diploma.id_for_label }}" class="form-label">Diploma <span class="badge bg-warning text-dark">Required</span></label>
+                            <label for="{{ form.diploma.id_for_label }}" class="form-label">Diploma <span class="text-danger" style="color: red;">*</span></label>
                             {% if candidate and candidate.diploma %}
                                 <div class="mb-2">
                                     <span class="badge bg-success">Document uploaded</span>
@@ -525,7 +525,7 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.good_moral.id_for_label }}" class="form-label">Good Moral Certificate <span class="badge bg-warning text-dark">Required</span></label>
+                            <label for="{{ form.good_moral.id_for_label }}" class="form-label">Good Moral Certificate <span class="text-danger" style="color: red;">*</span></label>
                             {% if candidate and candidate.good_moral %}
                                 <div class="mb-2">
                                     <span class="badge bg-success">Document uploaded</span>
@@ -541,7 +541,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.nbi_clearance.id_for_label }}" class="form-label">NBI Clearance <span class="badge bg-warning text-dark">Required</span></label>
+                            <label for="{{ form.nbi_clearance.id_for_label }}" class="form-label">NBI Clearance <span class="text-danger" style="color: red;">*</span></label>
                             {% if candidate and candidate.nbi_clearance %}
                                 <div class="mb-2">
                                     <span class="badge bg-success">Document uploaded</span>

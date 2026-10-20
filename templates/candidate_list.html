@@ -34,6 +34,31 @@
     .print-header {
         display: none;
     }
+
+    /* Status column and badge text wrapping */
+    .candidate-table th.status-col,
+    .candidate-table td.status-cell {
+        min-width: 135px;
+        white-space: normal;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .candidate-table .status-badge,
+    .candidate-table td.status-cell .badge,
+    .candidate-table td .badge {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: normal;
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+        line-height: 1.3;
+        padding: 0.4rem 0.6rem;
+        text-align: center;
+        font-size: 0.825rem;
+    }
 </style>
 
 <script>
@@ -128,32 +153,26 @@
 
                 <!-- Filters Row 1 -->
                 <div class="row mb-3">
-
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <div class="form-group mb-2">
                             {{ form.gender.label_tag }}
                             {{ form.gender }}
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <div class="form-group mb-2">
                             {{ form.specialization.label_tag }}
                             {{ form.specialization }}
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <div class="form-group mb-2">
                             {{ form.status.label_tag }}
                             {{ form.status }}
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="form-group mb-2">
-                            {{ form.sort_by.label_tag }}
-                            {{ form.sort_by }}
-                        </div>
-                    </div>
                 </div>
+                {{ form.sort_by }}
 
                 <!-- Date Range Row -->
                 <div class="row mb-3">
@@ -462,5 +481,220 @@
             }, 250);
         };
     }
+
+    // Styled in-page confirmation dialog (returns a Promise<boolean>)
+    function confirmEmailSend(name, email, status) {
+        return new Promise(function(resolve) {
+            const old = document.getElementById('emailConfirmOverlay');
+            if (old) old.remove();
+            const overlay = document.createElement('div');
+            overlay.id = 'emailConfirmOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = `
+                <div role="dialog" aria-modal="true" style="background:#fff;border-radius:12px;max-width:440px;width:92%;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;font-family:inherit;">
+                    <div style="background:#1a5f2a;color:#fff;padding:14px 20px;font-weight:600;">
+                        <i class="fas fa-envelope me-2"></i>Send Status Update Email
+                    </div>
+                    <div style="padding:20px;">
+                        <p class="mb-2">Send the current status update to:</p>
+                        <p class="mb-1"><strong id="emailConfirmName"></strong></p>
+                        <p class="mb-1 text-muted" id="emailConfirmAddr"></p>
+                        <p class="mb-0">Current status: <span class="badge bg-secondary" id="emailConfirmStatus"></span></p>
+                    </div>
+                    <div style="padding:12px 20px;background:#f8f9fa;display:flex;justify-content:flex-end;gap:8px;">
+                        <button type="button" class="btn btn-secondary btn-sm" id="emailConfirmCancel">Cancel</button>
+                        <button type="button" class="btn btn-success btn-sm" id="emailConfirmSend">
+                            <i class="fas fa-paper-plane me-1"></i>Send Email
+                        </button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+            // Set text safely (no HTML injection from candidate data)
+            overlay.querySelector('#emailConfirmName').textContent = name;
+            overlay.querySelector('#emailConfirmAddr').textContent = email;
+            overlay.querySelector('#emailConfirmStatus').textContent = status || 'Unknown';
+
+            function close(result) {
+                document.removeEventListener('keydown', onKey);
+                overlay.remove();
+                resolve(result);
+            }
+            function onKey(e) { if (e.key === 'Escape') close(false); }
+            document.addEventListener('keydown', onKey);
+            overlay.querySelector('#emailConfirmCancel').addEventListener('click', () => close(false));
+            overlay.querySelector('#emailConfirmSend').addEventListener('click', () => close(true));
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+            overlay.querySelector('#emailConfirmSend').focus();
+        });
+    }
+
+    // ---- Send Status Email via AJAX ----
+    // Single delegated listener: works for rows re-rendered by live search
+    // and can never be bound more than once (prevents duplicate emails).
+    if (!window.__statusEmailHandlerBound) {
+        window.__statusEmailHandlerBound = true;
+        document.addEventListener('click', async function(event) {
+                const button = event.target.closest('.send-status-email-btn');
+                if (!button || button.disabled) return;
+                event.preventDefault();
+
+                const candidateId = button.dataset.candidateId;
+                const candidateName = button.dataset.candidateName;
+                const candidateEmail = button.dataset.candidateEmail;
+                const candidateStatus = button.dataset.candidateStatus;
+
+                if (!candidateEmail) {
+                    showEmailToast('No email address found for ' + candidateName + '.', 'danger');
+                    return;
+                }
+
+                if (!(await confirmEmailSend(candidateName, candidateEmail, candidateStatus))) {
+                    return;
+                }
+
+                // Show loading state
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.disabled = true;
+
+                // Get CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                    || document.cookie.split('; ').find(c => c.startsWith('csrftoken='))?.split('=')[1]
+                    || '{{ csrf_token }}';
+
+                fetch('/candidates/' + candidateId + '/send-status-email/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    const type = response.headers.get('content-type') || '';
+                    if (!type.includes('application/json')) {
+                        throw new Error('Server returned HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showEmailToast(data.message, 'success');
+                    } else {
+                        showEmailToast(data.error || 'Failed to send email.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Email send error:', error);
+                    showEmailToast('Could not send email: ' + error.message, 'danger');
+                })
+                .finally(() => {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                });
+        });
+    }
+
+    function showEmailToast(message, type) {
+        // Remove existing toast if any
+        const existing = document.getElementById('emailToast');
+        if (existing) existing.remove();
+
+        const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+        const toastHTML = `
+            <div id="emailToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+                <div class="toast show align-items-center text-white ${bgClass} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            onclick="this.closest('#emailToast').remove()"></button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            const toast = document.getElementById('emailToast');
+            if (toast) toast.remove();
+        }, 5000);
+    }
+
+    // Column header sorting
+    document.addEventListener('click', function(e) {
+        const sortHeader = e.target.closest('.sortable-column');
+        if (!sortHeader) return;
+        e.preventDefault();
+
+        const nextSort = sortHeader.getAttribute('data-sort');
+        if (!nextSort) return;
+
+        const form = document.getElementById('candidateFilterForm');
+        if (!form) return;
+
+        let sortInput = form.querySelector('[name="sort_by"]');
+        if (!sortInput) {
+            sortInput = document.createElement('input');
+            sortInput.type = 'hidden';
+            sortInput.name = 'sort_by';
+            form.appendChild(sortInput);
+        }
+
+        if (sortInput.tagName === 'SELECT') {
+            let found = false;
+            for (let i = 0; i < sortInput.options.length; i++) {
+                if (sortInput.options[i].value === nextSort) {
+                    sortInput.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                const opt = new Option(nextSort, nextSort, true, true);
+                sortInput.add(opt);
+                sortInput.value = nextSort;
+            }
+        } else {
+            sortInput.value = nextSort;
+        }
+
+        const resultContainer = document.querySelector('[data-real-time-results]');
+        if (resultContainer) {
+            const formData = new FormData(form);
+            formData.set('sort_by', nextSort);
+            const params = new URLSearchParams(formData);
+            const fetchUrl = `${form.getAttribute('action') || window.location.pathname}?${params.toString()}`;
+            window.history.pushState({}, '', fetchUrl);
+            resultContainer.style.opacity = '0.5';
+
+            fetch(fetchUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Sort failed');
+                return res.text();
+            })
+            .then(html => {
+                resultContainer.innerHTML = html;
+                resultContainer.dispatchEvent(new CustomEvent('contentUpdated', { bubbles: true, detail: { html } }));
+            })
+            .catch(err => {
+                console.error('Sorting error:', err);
+                form.submit();
+            })
+            .finally(() => {
+                resultContainer.style.opacity = '1';
+            });
+        } else {
+            form.submit();
+        }
+    });
+
 </script>
 {% endblock %}

@@ -777,6 +777,17 @@ class Candidate(models.Model):
 
         return f"{self.first_name} {self.last_name} ({self.passport_number})"
 
+    @property
+    def full_name_last_first(self):
+        mi = f" {self.middle_initial}." if hasattr(self, 'middle_initial') and self.middle_initial else ""
+        if self.last_name and self.first_name:
+            return f"{self.last_name}, {self.first_name}{mi}"
+        elif self.last_name:
+            return self.last_name
+        elif self.first_name:
+            return f"{self.first_name}{mi}"
+        return "--"
+
     
 
     class Meta:
@@ -791,7 +802,7 @@ class Candidate(models.Model):
 
     
 
-    def validate_application(self, deadline_days=7):
+    def validate_application(self, deadline_days=7, save=True):
 
         """
 
@@ -923,6 +934,10 @@ class Candidate(models.Model):
 
         
 
+        # If read-only validation requested (e.g. GET edit page), return completeness without modifying DB or mutating status
+        if not save:
+            return is_fully_complete, missing_docs + missing_fields
+
         # Decide status based on completeness
 
         if is_fully_complete:
@@ -998,13 +1013,61 @@ class Candidate(models.Model):
     
 
     def can_assign_farm(self):
-
         """Check if candidate is validated and ready for farm assignment"""
-
         return self.status == self.VALIDATED
 
 
+class CandidateStatusHistory(models.Model):
+    """Chronological record of status transitions for a candidate's application."""
 
+    candidate = models.ForeignKey(
+        Candidate,
+        on_delete=models.CASCADE,
+        related_name='status_history'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Candidate.STATUS_CHOICES,
+        help_text="Status after transition"
+    )
+    from_status = models.CharField(
+        max_length=20,
+        choices=Candidate.STATUS_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Status prior to transition (None for initial creation)"
+    )
+    timestamp = models.DateTimeField(
+        default=timezone.now,
+        db_index=True,
+        help_text="When transition occurred"
+    )
+    missing_documents_note = models.TextField(
+        blank=True,
+        default='',
+        help_text="Snapshot of missing documents note at transition"
+    )
+    document_deadline = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="Snapshot of document deadline at transition"
+    )
+    notes = models.TextField(
+        blank=True,
+        default='',
+        help_text="Optional candidate-safe notes"
+    )
+
+    class Meta:
+        ordering = ['timestamp', 'id']
+        indexes = [
+            models.Index(fields=['candidate', 'timestamp']),
+        ]
+        verbose_name = 'Candidate Status History'
+        verbose_name_plural = 'Candidate Status Histories'
+
+    def __str__(self):
+        return f"Candidate #{self.candidate_id}: {self.from_status or 'Initial'} -> {self.status} at {self.timestamp:%Y-%m-%d %H:%M}"
 
 
 class Notification(models.Model):

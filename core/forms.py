@@ -226,9 +226,9 @@ class ProfileUpdateForm(forms.ModelForm):
 
             'gender': forms.Select(attrs={'class': 'form-control'}),
 
-            'country_of_birth': forms.TextInput(attrs={'class': 'form-control'}),
+            'country_of_birth': forms.Select(attrs={'class': 'form-control'}),
 
-            'nationality': forms.TextInput(attrs={'class': 'form-control'}),
+            'nationality': forms.Select(attrs={'class': 'form-control'}),
 
             'religion': forms.TextInput(attrs={'class': 'form-control'}),
 
@@ -273,6 +273,72 @@ class ProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
 
         super(ProfileUpdateForm, self).__init__(*args, **kwargs)
+
+        country_choices = [('', 'Select Country of Birth')] + [
+            ('Philippines', 'Philippines'),
+            ('Israel', 'Israel'),
+            ('United States', 'United States'),
+            ('Canada', 'Canada'),
+            ('Australia', 'Australia'),
+            ('United Kingdom', 'United Kingdom'),
+            ('Japan', 'Japan'),
+            ('Singapore', 'Singapore'),
+            ('Thailand', 'Thailand'),
+            ('Vietnam', 'Vietnam'),
+            ('Malaysia', 'Malaysia'),
+            ('Indonesia', 'Indonesia'),
+            ('South Korea', 'South Korea'),
+            ('China', 'China'),
+            ('Taiwan', 'Taiwan'),
+            ('India', 'India'),
+            ('Saudi Arabia', 'Saudi Arabia'),
+            ('United Arab Emirates', 'United Arab Emirates'),
+            ('Qatar', 'Qatar'),
+            ('Kuwait', 'Kuwait'),
+            ('New Zealand', 'New Zealand'),
+            ('Germany', 'Germany'),
+            ('France', 'France'),
+            ('Italy', 'Italy'),
+            ('Spain', 'Spain'),
+            ('Other', 'Other Country'),
+        ]
+        if self.instance and self.instance.country_of_birth:
+            if not any(c[0] == self.instance.country_of_birth for c in country_choices):
+                country_choices.append((self.instance.country_of_birth, self.instance.country_of_birth))
+        self.fields['country_of_birth'].choices = country_choices
+
+        nationality_choices = [('', 'Select Nationality')] + [
+            ('Filipino', 'Filipino'),
+            ('Israeli', 'Israeli'),
+            ('American', 'American'),
+            ('Canadian', 'Canadian'),
+            ('Australian', 'Australian'),
+            ('British', 'British'),
+            ('Japanese', 'Japanese'),
+            ('Singaporean', 'Singaporean'),
+            ('Thai', 'Thai'),
+            ('Vietnamese', 'Vietnamese'),
+            ('Malaysian', 'Malaysian'),
+            ('Indonesian', 'Indonesian'),
+            ('Korean', 'Korean'),
+            ('Chinese', 'Chinese'),
+            ('Taiwanese', 'Taiwanese'),
+            ('Indian', 'Indian'),
+            ('Saudi', 'Saudi'),
+            ('Emirati', 'Emirati'),
+            ('Qatari', 'Qatari'),
+            ('Kuwaiti', 'Kuwaiti'),
+            ('New Zealander', 'New Zealander'),
+            ('German', 'German'),
+            ('French', 'French'),
+            ('Italian', 'Italian'),
+            ('Spanish', 'Spanish'),
+            ('Other', 'Other Nationality'),
+        ]
+        if self.instance and self.instance.nationality:
+            if not any(n[0] == self.instance.nationality for n in nationality_choices):
+                nationality_choices.append((self.instance.nationality, self.instance.nationality))
+        self.fields['nationality'].choices = nationality_choices
 
 
 
@@ -1496,14 +1562,6 @@ class CandidateSearchForm(forms.Form):
 
         ('created_at', 'Oldest First'),
 
-        ('first_name', 'Name (A-Z)'),
-
-        ('-first_name', 'Name (Z-A)'),
-
-        ('email', 'Email (A-Z)'),
-
-        ('-email', 'Email (Z-A)'),
-
         ('gender', 'Sex'),
 
         ('country_of_birth', 'Country'),
@@ -1544,7 +1602,7 @@ class CandidateSearchForm(forms.Form):
 
     # Sorting field
 
-    sort_by = forms.CharField(required=False, widget=forms.Select(choices=SORT_CHOICES, attrs={'class': 'form-control'}), label='Sort By', initial='-created_at')
+    sort_by = forms.CharField(required=False, widget=forms.HiddenInput(), initial='-created_at')
 
 
 

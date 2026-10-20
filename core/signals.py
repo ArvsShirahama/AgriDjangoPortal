@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.apps import apps
 from django.db import connection
-from .models import Profile, ActivityLog, Registration, Candidate
+from .models import Profile, ActivityLog, Registration, Candidate, CandidateStatusHistory
 from .middleware import get_request_user, get_request_ip, get_request_session_key
 from .utils.file_tracker import register_model_files
 
@@ -383,4 +383,48 @@ def track_candidate_files(sender, instance, created, **kwargs):
         try:
             register_model_files(instance, instance.created_by, 'Candidate')
         except Exception as e:
-            logger.error(f"Error tracking Candidate files for candidate {instance.pk}: {str(e)}") 
+            logger.error(f"Error tracking Candidate files for candidate {instance.pk}: {str(e)}")
+
+
+@receiver(pre_save, sender=Candidate)
+def track_candidate_status_pre_save(sender, instance, **kwargs):
+    """Capture prior status before Candidate is saved to detect genuine transitions."""
+    if instance.pk:
+        try:
+            prior = Candidate.objects.filter(pk=instance.pk).values('status').first()
+            instance._prior_status = prior['status'] if prior else None
+        except Exception:
+            instance._prior_status = None
+    else:
+        instance._prior_status = None
+
+
+@receiver(post_save, sender=Candidate)
+def record_candidate_status_history(sender, instance, created, **kwargs):
+    """
+    Record initial status and all real status transitions in CandidateStatusHistory.
+    Never creates duplicate entries on unchanged saves.
+    """
+    try:
+        from django.utils import timezone
+        if created:
+            CandidateStatusHistory.objects.create(
+                candidate=instance,
+                status=instance.status,
+                from_status=None,
+                timestamp=getattr(instance, 'created_at', None) or timezone.now(),
+                missing_documents_note=instance.missing_documents_note or '',
+                document_deadline=instance.document_deadline
+            )
+        elif hasattr(instance, '_prior_status') and instance._prior_status != instance.status:
+            CandidateStatusHistory.objects.create(
+                candidate=instance,
+                status=instance.status,
+                from_status=instance._prior_status,
+                timestamp=timezone.now(),
+                missing_documents_note=instance.missing_documents_note or '',
+                document_deadline=instance.document_deadline
+            )
+    except Exception as e:
+        logger.error(f"Error recording CandidateStatusHistory for candidate {instance.pk}: {str(e)}")
+ 

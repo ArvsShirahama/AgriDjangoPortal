@@ -104,6 +104,37 @@
         font-size: 0.85rem;
     }
 
+    /* Program location and badge responsive auto-wrapping */
+    .program-card-hover .badge {
+        white-space: normal !important;
+        word-break: normal;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        line-height: 1.35;
+        text-align: left;
+    }
+
+    .program-location-badge {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 0.35rem;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .program-location-badge i {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .program-location-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
     .card-body {
         padding: 1.5rem;
     }

@@ -1,7 +1,58 @@
 {% if page_obj %}
+<style>
+    /* Keep the Actions column visible when the table scrolls horizontally */
+    .candidate-table td.print-actions-col,
+    .candidate-table th.print-actions-col {
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        white-space: nowrap;
+        box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.15);
+    }
+    .candidate-table th.print-actions-col { background-color: #f8f9fa; }
+    .candidate-table td.print-actions-col { background-color: #fff; }
+    .candidate-table tbody tr:hover td.print-actions-col { background-color: #f2f2f2; }
+    .candidate-table .btn-group { flex-wrap: nowrap; }
+    .candidate-table th.sortable-column {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        transition: background-color 0.15s ease-in-out;
+    }
+    .candidate-table th.sortable-column:hover {
+        background-color: #e2e6ea;
+    }
+    .candidate-table th.sortable-column:hover i.text-muted {
+        color: #0d6efd !important;
+    }
+    /* Status column and badge text wrapping */
+    .candidate-table th.status-col,
+    .candidate-table td.status-cell {
+        min-width: 135px;
+        white-space: normal;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .candidate-table .status-badge,
+    .candidate-table td.status-cell .badge,
+    .candidate-table td .badge {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: normal;
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+        line-height: 1.3;
+        padding: 0.4rem 0.6rem;
+        text-align: center;
+        font-size: 0.825rem;
+    }
+</style>
 <!-- Main Table (Screen Display) -->
 <div class="table-responsive">
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover candidate-table">
         <thead class="table-light">
             <tr>
                 <th class="print-checkbox-col">
@@ -9,16 +60,115 @@
                         <input type="checkbox" class="form-check-input" id="selectAll">
                     </div>
                 </th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Sex</th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'last_name' %}-last_name{% else %}last_name{% endif %}" title="Sort by Name (Last Name basis)">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Name
+                        {% if current_sort == 'last_name' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-last_name' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'email' %}-email{% else %}email{% endif %}" title="Sort by Email">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Email
+                        {% if current_sort == 'email' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-email' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'gender' %}-gender{% else %}gender{% endif %}" title="Sort by Sex">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Sex
+                        {% if current_sort == 'gender' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-gender' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
 
-                <th>SUC</th>
-                <th>Specialization</th>
-                <th>Program</th>
-                <th>Farm Location</th>
-                <th>Status</th>
-                <th>Date Added</th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'university' %}-university{% else %}university{% endif %}" title="Sort by SUC">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        SUC
+                        {% if current_sort == 'university' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-university' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'specialization' %}-specialization{% else %}specialization{% endif %}" title="Sort by Specialization">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Specialization
+                        {% if current_sort == 'specialization' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-specialization' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'program' %}-program{% else %}program{% endif %}" title="Sort by Program">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Program
+                        {% if current_sort == 'program' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-program' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'location' %}-location{% else %}location{% endif %}" title="Sort by Farm Location">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Farm Location
+                        {% if current_sort == 'location' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-location' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column status-col" data-sort="{% if current_sort == 'status' %}-status{% else %}status{% endif %}" title="Sort by Status">
+                    <span class="d-inline-flex align-items-center justify-content-center gap-1">
+                        Status
+                        {% if current_sort == 'status' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-status' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
+                <th class="sortable-column" data-sort="{% if current_sort == 'created_at' %}-created_at{% else %}created_at{% endif %}" title="Sort by Date Added">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        Date Added
+                        {% if current_sort == 'created_at' %}
+                            <i class="fas fa-sort-up text-primary"></i>
+                        {% elif current_sort == '-created_at' %}
+                            <i class="fas fa-sort-down text-primary"></i>
+                        {% else %}
+                            <i class="fas fa-sort text-muted"></i>
+                        {% endif %}
+                    </span>
+                </th>
                 <th class="print-actions-col">Actions</th>
             </tr>
         </thead>
@@ -33,7 +183,7 @@
                 </td>
                 <td>
                     <a href="{% url 'view_candidate' candidate.id %}">
-                        {{ candidate.first_name }} {{ candidate.last_name }}
+                        {{ candidate.full_name_last_first }}
                     </a>
                 </td>
                 <td>{{ candidate.email|default:"--" }}</td>
@@ -43,9 +193,9 @@
                 <td>{{ candidate.specialization|default:"--" }}</td>
                 <td>{{ candidate.program.title|default:"--" }}</td>
                 <td>{{ candidate.program.location|default:"--" }}</td>
-                <td>
+                <td class="status-cell">
                     <span
-                        class="badge {% if candidate.status == 'Approved' %}bg-success{% elif candidate.status == 'Rejected' %}bg-danger{% elif candidate.status == 'Validated' %}bg-info{% elif candidate.status == 'Missing_Docs' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                        class="badge status-badge text-wrap {% if candidate.status == 'Approved' %}bg-success{% elif candidate.status == 'Rejected' %}bg-danger{% elif candidate.status == 'Validated' %}bg-info{% elif candidate.status == 'Missing_Docs' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
                         {{ candidate.get_status_display }}
                     </span>
                 </td>
@@ -61,10 +211,19 @@
                             title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
+                        <button type="button" class="btn btn-warning btn-sm send-status-email-btn"
+                            data-candidate-id="{{ candidate.id }}"
+                            data-candidate-name="{{ candidate.first_name }} {{ candidate.last_name }}"
+                            data-candidate-email="{{ candidate.email|default:'' }}"
+                            data-candidate-status="{{ candidate.get_status_display }}"
+                            title="Send status update email to {{ candidate.email|default:'no email' }}">
+                            <i class="fas fa-envelope"></i>
+                        </button>
                         <a href="{% url 'delete_candidate' candidate.id %}" class="btn btn-danger btn-sm"
                             title="Delete">
                             <i class="fas fa-trash"></i>
                         </a>
+
                         {% endif %}
                     </div>
                 </td>
@@ -98,7 +257,7 @@
         <tbody id="printTableBody">
             {% for candidate in page_obj %}
             <tr data-candidate-id="{{ candidate.id }}">
-                <td>{{ candidate.first_name }} {{ candidate.last_name }}</td>
+                <td>{{ candidate.full_name_last_first }}</td>
                 <td>{{ candidate.email|default:"--" }}</td>
                 <td>{{ candidate.gender|default:"--" }}</td>
 

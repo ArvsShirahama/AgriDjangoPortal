@@ -159,6 +159,21 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1.25rem 1.5rem;
 }
 
+.card-header.bg-primary,
+.card-header.bg-success,
+.card-header.text-white,
+.card-header.bg-primary h1, .card-header.bg-primary h2, .card-header.bg-primary h3,
+.card-header.bg-primary h4, .card-header.bg-primary h5, .card-header.bg-primary h6,
+.card-header.bg-primary i,
+.card-header.text-white h1, .card-header.text-white h2, .card-header.text-white h3,
+.card-header.text-white h4, .card-header.text-white h5, .card-header.text-white h6,
+.card-header.text-white i,
+.card-header.bg-success h1, .card-header.bg-success h2, .card-header.bg-success h3,
+.card-header.bg-success h4, .card-header.bg-success h5, .card-header.bg-success h6,
+.card-header.bg-success i {
+    color: #ffffff !important;
+}
+
 .card-body {
     padding: 1.5rem;
 }

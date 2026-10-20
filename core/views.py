@@ -3241,22 +3241,83 @@ def candidate_list(request):
 
 
         # Apply sorting
+        sort_by = request.GET.get('sort_by') or form.cleaned_data.get('sort_by')
 
-        sort_by = form.cleaned_data.get('sort_by')
+        sort_mapping = {
+            'last_name': ['last_name', 'first_name'],
+            '-last_name': ['-last_name', '-first_name'],
+            'name': ['last_name', 'first_name'],
+            '-name': ['-last_name', '-first_name'],
+            'first_name': ['last_name', 'first_name'],
+            '-first_name': ['-last_name', '-first_name'],
+            'email': ['email'],
+            '-email': ['-email'],
+            'gender': ['gender'],
+            '-gender': ['-gender'],
+            'sex': ['gender'],
+            '-sex': ['-gender'],
+            'university': ['university'],
+            '-university': ['-university'],
+            'suc': ['university'],
+            '-suc': ['-university'],
+            'specialization': ['specialization'],
+            '-specialization': ['-specialization'],
+            'program': ['program__title'],
+            '-program': ['-program__title'],
+            'program__title': ['program__title'],
+            '-program__title': ['-program__title'],
+            'location': ['program__location'],
+            '-location': ['-program__location'],
+            'farm_location': ['program__location'],
+            '-farm_location': ['-program__location'],
+            'program__location': ['program__location'],
+            '-program__location': ['-program__location'],
+            'status': ['status'],
+            '-status': ['-status'],
+            'created_at': ['created_at'],
+            '-created_at': ['-created_at'],
+            'country_of_birth': ['country_of_birth'],
+            '-country_of_birth': ['-country_of_birth'],
+            'nationality': ['nationality'],
+            '-nationality': ['-nationality'],
+        }
 
-        if sort_by:
-
-            candidates = candidates.order_by(sort_by)
-
+        if sort_by in sort_mapping:
+            candidates = candidates.order_by(*sort_mapping[sort_by])
         else:
-
             candidates = candidates.order_by('-created_at')
+            sort_by = '-created_at'
 
     else:
-
         # Default sorting for non-staff users
-
-        candidates = candidates.order_by('-created_at')
+        sort_by = request.GET.get('sort_by')
+        sort_mapping = {
+            'last_name': ['last_name', 'first_name'],
+            '-last_name': ['-last_name', '-first_name'],
+            'name': ['last_name', 'first_name'],
+            '-name': ['-last_name', '-first_name'],
+            'email': ['email'],
+            '-email': ['-email'],
+            'gender': ['gender'],
+            '-gender': ['-gender'],
+            'university': ['university'],
+            '-university': ['-university'],
+            'specialization': ['specialization'],
+            '-specialization': ['-specialization'],
+            'program': ['program__title'],
+            '-program': ['-program__title'],
+            'location': ['program__location'],
+            '-location': ['-program__location'],
+            'status': ['status'],
+            '-status': ['-status'],
+            'created_at': ['created_at'],
+            '-created_at': ['-created_at'],
+        }
+        if sort_by in sort_mapping:
+            candidates = candidates.order_by(*sort_mapping[sort_by])
+        else:
+            candidates = candidates.order_by('-created_at')
+            sort_by = '-created_at'
 
     
 
@@ -3315,6 +3376,8 @@ def candidate_list(request):
         'page_obj': page_obj,
 
         'form': form,
+
+        'current_sort': sort_by,
 
         'status_colors': {
 
@@ -4098,42 +4161,110 @@ def edit_candidate(request, candidate_id):
 
     
 
-    # Calculate missing fields and status summary
-
-    is_complete, all_missing = candidate.validate_application()
-
+    # Calculate missing fields and status summary without mutating database on GET
+    is_complete, all_missing = candidate.validate_application(save=False)
     # Filter out document names to get just the fields
-
     docs_list = ["Passport Scan", "Transcript of Records (TOR)", "Diploma", "Good Moral Character Certificate", "NBI Clearance", "Profile Photograph", "Driver's License (Required for this program)"]
-
     missing_fields = [m for m in all_missing if m not in docs_list]
 
-    
+    # Fetch status history for applicant timeline (chronological order)
+    status_history = candidate.status_history.all().order_by('timestamp', 'id')
+
+    # Build milestone progression data for applicant timeline
+    # Only using defined system statuses: Draft, Missing_Docs, Validated, Approved, and Rejected
+    milestone_keys = [Candidate.DRAFT, Candidate.MISSING_DOCS, Candidate.VALIDATED, Candidate.APPROVED]
+    is_rejected = candidate.status == Candidate.REJECTED or any(h.status == Candidate.REJECTED for h in status_history)
+    if is_rejected:
+        milestone_keys.append(Candidate.REJECTED)
+
+    history_by_status = {}
+    for h in status_history:
+        history_by_status[h.status] = h
+
+    status_order = {
+        Candidate.DRAFT: 1,
+        Candidate.MISSING_DOCS: 2,
+        Candidate.VALIDATED: 3,
+        Candidate.APPROVED: 4,
+        Candidate.REJECTED: 5,
+    }
+    current_order = status_order.get(candidate.status, 1)
+
+    milestone_config = {
+        Candidate.DRAFT: {
+            'code': Candidate.DRAFT,
+            'label': 'Draft',
+            'pill_label': 'DRAFT',
+            'icon': 'fas fa-file-alt',
+            'theme': 'purple',
+            'order': 1,
+        },
+        Candidate.MISSING_DOCS: {
+            'code': Candidate.MISSING_DOCS,
+            'label': 'Missing Documents',
+            'pill_label': 'MISSING DOCUMENTS',
+            'icon': 'fas fa-search',
+            'theme': 'blue',
+            'order': 2,
+        },
+        Candidate.VALIDATED: {
+            'code': Candidate.VALIDATED,
+            'label': 'Validated',
+            'pill_label': 'VALIDATED',
+            'icon': 'fas fa-clipboard-check',
+            'theme': 'amber',
+            'order': 3,
+        },
+        Candidate.APPROVED: {
+            'code': Candidate.APPROVED,
+            'label': 'Approved',
+            'pill_label': 'APPROVED',
+            'icon': 'fas fa-envelope-open-text',
+            'theme': 'green',
+            'order': 4,
+        },
+        Candidate.REJECTED: {
+            'code': Candidate.REJECTED,
+            'label': 'Rejected',
+            'pill_label': 'REJECTED',
+            'icon': 'fas fa-times-circle',
+            'theme': 'red',
+            'order': 5,
+        },
+    }
+
+    milestones = []
+    for key in milestone_keys:
+        cfg = milestone_config[key].copy()
+        hist_entry = history_by_status.get(key)
+        cfg['history_entry'] = hist_entry
+        cfg['timestamp'] = hist_entry.timestamp if hist_entry else None
+
+        if key == candidate.status:
+            cfg['state'] = 'current'
+        elif is_rejected and key != Candidate.REJECTED:
+            cfg['state'] = 'completed' if hist_entry else 'pending'
+        elif cfg['order'] < current_order or hist_entry is not None:
+            cfg['state'] = 'completed'
+        else:
+            cfg['state'] = 'pending'
+
+        milestones.append(cfg)
 
     template_name = 'candidate_form.html' if request.user.is_staff else 'candidate_apply_edit.html'
 
-    
-
     # Safely get program title
-
     program_title = candidate.program.title if candidate.program else "Unassigned Program"
 
-    
-
     response = render(request, template_name, {
-
         'form': form,
-
         'candidate': candidate,
-
         'title': f'Edit Application: {program_title}' if not request.user.is_staff else f'Edit Candidate: {candidate.first_name} {candidate.last_name}',
-
         'button_text': 'Update Candidate',
-
         'universities': University.objects.all().order_by('name'),
-
         'missing_fields': missing_fields,
-
+        'status_history': status_history,
+        'milestones': milestones,
     })
 
     
@@ -5615,6 +5746,178 @@ AgroStudies Team
     return redirect('view_candidate', candidate_id=candidate_id)
 
 
+@login_required
+@require_POST
+def send_candidate_status_email(request, candidate_id):
+    """Send an email notification to a candidate about their current status (admin only)"""
+    if not request.user.is_staff:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+
+    candidate = get_object_or_404(Candidate, id=candidate_id)
+
+    # Determine recipient email
+    recipient_email = None
+    recipient_name = candidate.first_name or "Applicant"
+
+    if candidate.email:
+        recipient_email = candidate.email.strip()
+    else:
+        # Try to find user by candidate's created_by
+        if candidate.created_by and not candidate.created_by.is_staff and candidate.created_by.email:
+            recipient_email = candidate.created_by.email
+            recipient_name = candidate.created_by.first_name or candidate.created_by.username
+
+    if not recipient_email:
+        return JsonResponse({
+            'success': False,
+            'error': f'No email address found for {candidate.first_name} {candidate.last_name}.'
+        })
+
+    try:
+        program_name = candidate.program.title if candidate.program else "the program"
+        status_display = dict(Candidate.STATUS_CHOICES).get(candidate.status, candidate.status)
+
+        # Build email based on current status
+        status_messages = {
+            Candidate.APPROVED: {
+                'subject': f'Application Approved - {program_name}',
+                'body': f"""Dear {recipient_name},
+
+Congratulations! Your application for {program_name} has been APPROVED.
+
+Application Details:
+- Program: {program_name}
+- Status: Approved
+- Name: {candidate.first_name} {candidate.last_name}
+
+Next Steps:
+Please log in to your account to view more details and proceed with the next steps.
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+            },
+            Candidate.REJECTED: {
+                'subject': f'Application Status Update - {program_name}',
+                'body': f"""Dear {recipient_name},
+
+We regret to inform you that your application for {program_name} has been REJECTED.
+
+Application Details:
+- Program: {program_name}
+- Status: Rejected
+- Name: {candidate.first_name} {candidate.last_name}
+
+If you have any questions or would like feedback, please contact us.
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+            },
+            Candidate.VALIDATED: {
+                'subject': f'Application Validated - {program_name}',
+                'body': f"""Dear {recipient_name},
+
+Your application for {program_name} has been VALIDATED and is ready for farm assignment.
+
+Application Details:
+- Program: {program_name}
+- Status: Validated - Ready for Farm Assignment
+- Name: {candidate.first_name} {candidate.last_name}
+
+You will receive further instructions once a farm has been assigned.
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+            },
+            Candidate.MISSING_DOCS: {
+                'subject': f'Missing Documents - {program_name}',
+                'body': f"""Dear {recipient_name},
+
+Your application for {program_name} requires additional documents.
+
+Application Details:
+- Program: {program_name}
+- Status: Missing Documents
+- Name: {candidate.first_name} {candidate.last_name}
+{f"- Missing: {candidate.missing_documents_note}" if candidate.missing_documents_note else ""}
+{f"- Deadline: {candidate.document_deadline.strftime('%B %d, %Y')}" if candidate.document_deadline else ""}
+
+Please log in and upload the required documents as soon as possible.
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+            },
+            Candidate.DRAFT: {
+                'subject': f'Application Received - {program_name}',
+                'body': f"""Dear {recipient_name},
+
+Your application for {program_name} has been received and is currently being reviewed.
+
+Application Details:
+- Program: {program_name}
+- Status: Draft (Under Review)
+- Name: {candidate.first_name} {candidate.last_name}
+
+You will be notified once your application has been processed.
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+            },
+        }
+
+        email_content = status_messages.get(candidate.status, {
+            'subject': f'Application Status Update - {program_name}',
+            'body': f"""Dear {recipient_name},
+
+This is an update regarding your application for {program_name}.
+
+Application Details:
+- Program: {program_name}
+- Status: {status_display}
+- Name: {candidate.first_name} {candidate.last_name}
+
+View your application: {request.build_absolute_uri(f'/candidates/{candidate.id}/')}
+
+Best regards,
+AgroStudies Team
+"""
+        })
+
+        result = send_mail(
+            email_content['subject'],
+            email_content['body'],
+            settings.DEFAULT_FROM_EMAIL,
+            [recipient_email],
+            fail_silently=False,
+        )
+
+        logger.info(f"Status email sent to {recipient_email} for candidate {candidate_id} (status={candidate.status}, result={result})")
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Status update email sent to {recipient_email}.'
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to send status email to {recipient_email} for candidate {candidate_id}: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to send email: {str(e)}'
+        })
 
 
 

@@ -242,6 +242,24 @@
 
         border-bottom: 2px solid #1b4332;
 
+        color: #ffffff !important;
+
+    }
+
+    .card-header.bg-primary h5,
+
+    .card-header.bg-primary h5 *,
+
+    .card-header.bg-primary i,
+
+    .card-header.bg-primary .text-white {
+
+        color: #ffffff !important;
+
+        font-weight: 700 !important;
+
+        letter-spacing: 0.3px;
+
     }
 
 
@@ -581,13 +599,307 @@
         }
 
         .edit-mode .info-row {
-
             background-color: #ffffff;
-
         }
-
     }
 
+    /* ══════════════════════════════════════════════════════════
+       Application Status Stepper Timeline (Reference Photo Design)
+       ══════════════════════════════════════════════════════════ */
+    .timeline-card {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .timeline-card-header {
+        background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+        color: #ffffff;
+        padding: 1.15rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .timeline-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        font-size: 1.1rem;
+    }
+    .timeline-stepper-wrapper {
+        padding: 2.25rem 1.5rem 1.75rem 1.5rem;
+        background: radial-gradient(circle at 50% 30%, #faf8ff 0%, #ffffff 80%);
+    }
+    .stepper-container {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        position: relative;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+        min-width: 110px;
+        text-align: center;
+        z-index: 2;
+    }
+
+    /* Circular Node (Reference photo double ring / elevation) */
+    .stepper-node-outer {
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        padding: 5px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .stepper-node-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Themes per status matching reference photo colors */
+    /* Purple (Draft) */
+    .theme-purple .stepper-node-outer {
+        border: 4px solid #ede9fe;
+    }
+    .theme-purple.state-completed .stepper-node-inner,
+    .theme-purple.state-current .stepper-node-inner {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(109, 40, 217, 0.35);
+    }
+    .theme-purple .stepper-pill {
+        background-color: #f5f3ff;
+        border: 1.5px solid #c4b5fd;
+        color: #6d28d9;
+    }
+
+    /* Blue (Missing Docs) */
+    .theme-blue .stepper-node-outer {
+        border: 4px solid #e0f2fe;
+    }
+    .theme-blue.state-completed .stepper-node-inner,
+    .theme-blue.state-current .stepper-node-inner {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+    }
+    .theme-blue .stepper-pill {
+        background-color: #f0f9ff;
+        border: 1.5px solid #7dd3fc;
+        color: #0369a1;
+    }
+
+    /* Amber (Validated) */
+    .theme-amber .stepper-node-outer {
+        border: 4px solid #fef3c7;
+    }
+    .theme-amber.state-completed .stepper-node-inner,
+    .theme-amber.state-current .stepper-node-inner {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+    }
+    .theme-amber .stepper-pill {
+        background-color: #fffbeb;
+        border: 1.5px solid #fde68a;
+        color: #b45309;
+    }
+
+    /* Green (Approved) */
+    .theme-green .stepper-node-outer {
+        border: 4px solid #d1fae5;
+    }
+    .theme-green.state-completed .stepper-node-inner,
+    .theme-green.state-current .stepper-node-inner {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(4, 120, 87, 0.35);
+    }
+    .theme-green .stepper-pill {
+        background-color: #ecfdf5;
+        border: 1.5px solid #a7f3d0;
+        color: #047857;
+    }
+
+    /* Red (Rejected) */
+    .theme-red .stepper-node-outer {
+        border: 4px solid #fee2e2;
+    }
+    .theme-red.state-completed .stepper-node-inner,
+    .theme-red.state-current .stepper-node-inner {
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35);
+    }
+    .theme-red .stepper-pill {
+        background-color: #fef2f2;
+        border: 1.5px solid #fecaca;
+        color: #b91c1c;
+    }
+
+    /* Pending State */
+    .state-pending .stepper-node-outer {
+        border: 3px dashed #cbd5e1;
+        box-shadow: none;
+    }
+    .state-pending .stepper-node-inner {
+        background: #f8fafc;
+        color: #94a3b8;
+    }
+    .state-pending .stepper-pill {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #94a3b8;
+    }
+
+    /* Current / Active Pulse */
+    .state-current .stepper-node-outer {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 6px rgba(45, 106, 79, 0.15), 0 12px 28px rgba(0, 0, 0, 0.12);
+        animation: pulseRing 2.4s infinite;
+    }
+    @keyframes pulseRing {
+        0% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.3), 0 8px 24px rgba(0, 0, 0, 0.12); }
+        70% { box-shadow: 0 0 0 12px rgba(45, 106, 79, 0), 0 8px 24px rgba(0, 0, 0, 0.12); }
+        100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0), 0 8px 24px rgba(0, 0, 0, 0.12); }
+    }
+
+    /* Pill Badge */
+    .stepper-pill {
+        margin-top: 14px;
+        padding: 5px 16px;
+        border-radius: 9999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: inline-block;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .stepper-timestamp {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .stepper-state-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        margin-top: 3px;
+        letter-spacing: 0.03em;
+    }
+
+    /* Connecting Track Bar */
+    .stepper-connector-bar {
+        position: absolute;
+        top: 41px;
+        left: 50px;
+        right: 50px;
+        height: 4px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    /* History & Activity Log Section */
+    .timeline-history-section {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        padding: 1.5rem;
+    }
+    .history-item {
+        position: relative;
+        padding-left: 28px;
+        padding-bottom: 1.25rem;
+    }
+    .history-item:last-child {
+        padding-bottom: 0;
+    }
+    .history-item::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        bottom: 0;
+        width: 2px;
+        background: #cbd5e1;
+    }
+    .history-item:last-child::before {
+        display: none;
+    }
+    .history-item-dot {
+        position: absolute;
+        left: 2px;
+        top: 6px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #2d6a4f;
+        border: 3px solid #ffffff;
+        box-shadow: 0 0 0 2px #2d6a4f;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stepper-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1.5rem;
+        }
+        .stepper-connector-bar {
+            display: none;
+        }
+        .stepper-step {
+            flex-direction: row;
+            text-align: left;
+            gap: 1.25rem;
+            align-items: center;
+        }
+        .stepper-node-outer {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+        .stepper-node-inner {
+            font-size: 1.25rem;
+        }
+        .stepper-step-body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .stepper-pill {
+            margin-top: 0;
+        }
+        .stepper-timestamp {
+            justify-content: flex-start;
+        }
+    }
 </style>
 
 {% endblock %}
@@ -630,13 +942,124 @@
 
     </div>
 
+    <!-- Application Status Timeline Card (Reference Photo Stepper Design) -->
+    <div class="timeline-card shadow mb-4">
+        <div class="timeline-card-header">
+            <div>
+                <i class="fas fa-stream me-2 text-warning"></i>
+                <span class="fw-bold">Application Status Timeline</span>
+            </div>
+            <div>
+                <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-bold">
+                    Current Status: <span class="text-success">{{ candidate.get_status_display }}</span>
+                </span>
+            </div>
+        </div>
 
+        <div class="timeline-stepper-wrapper">
+            <div class="stepper-container">
+                <!-- Desktop Connector Line -->
+                <div class="stepper-connector-bar d-none d-md-block"></div>
+
+                {% for milestone in milestones %}
+                <div class="stepper-step theme-{{ milestone.theme }} state-{{ milestone.state }}">
+                    <div class="stepper-node-outer">
+                        <div class="stepper-node-inner">
+                            <i class="{{ milestone.icon }}"></i>
+                        </div>
+                    </div>
+
+                    <div class="stepper-step-body">
+                        <div class="stepper-pill">{{ milestone.pill_label }}</div>
+
+                        {% if milestone.state == 'current' %}
+                            <div class="stepper-state-badge text-primary fw-bold">
+                                <i class="fas fa-circle-dot me-1"></i>Current Status
+                            </div>
+                        {% elif milestone.state == 'completed' %}
+                            <div class="stepper-state-badge text-success">
+                                <i class="fas fa-check-circle me-1"></i>Completed
+                            </div>
+                        {% else %}
+                            <div class="stepper-state-badge text-muted">
+                                <i class="fas fa-clock me-1"></i>Pending
+                            </div>
+                        {% endif %}
+
+                        {% if milestone.timestamp %}
+                            <div class="stepper-timestamp">
+                                <i class="far fa-calendar-alt"></i> {{ milestone.timestamp|date:"M d, Y" }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chronological Transition History & Details -->
+        <div class="timeline-history-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 fw-bold text-dark">
+                    <i class="fas fa-history me-2 text-secondary"></i>Status Transition History
+                </h6>
+                <span class="text-muted small">
+                    {{ status_history|length }} recorded event{{ status_history|length|pluralize }}
+                </span>
+            </div>
+
+            {% if status_history %}
+            <div class="history-list">
+                {% for event in status_history %}
+                <div class="history-item">
+                    <div class="history-item-dot"></div>
+                    <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-1">
+                        <div>
+                            <span class="fw-bold text-dark">
+                                {% if event.from_status %}
+                                    <span class="badge bg-secondary me-1">{{ event.from_status }}</span>
+                                    <i class="fas fa-arrow-right text-muted small mx-1"></i>
+                                {% else %}
+                                    <span class="badge bg-info text-dark me-1">Initial</span>
+                                {% endif %}
+                                <span class="badge {% if event.status == 'Approved' %}bg-success{% elif event.status == 'Rejected' %}bg-danger{% elif event.status == 'Validated' %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                                    {{ event.get_status_display }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="text-muted small">
+                            <i class="far fa-clock me-1"></i>{{ event.timestamp|date:"M d, Y, h:i A" }}
+                        </div>
+                    </div>
+
+                    {% if event.status == 'Missing_Docs' and event.missing_documents_note %}
+                    <div class="alert alert-warning py-2 px-3 mt-2 mb-0 small rounded-3">
+                        <i class="fas fa-exclamation-circle me-1 text-warning"></i>
+                        <strong>Document Details:</strong> {{ event.missing_documents_note }}
+                        {% if event.document_deadline %}
+                        <div class="mt-1 text-danger fw-bold">
+                            <i class="far fa-calendar-times me-1"></i>Upload Deadline: {{ event.document_deadline|date:"F d, Y, h:i A" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-3 bg-white border rounded-3 text-muted text-center small">
+                <i class="fas fa-info-circle me-1 text-primary"></i>
+                No historical status transitions recorded yet. Your current application status is <strong>{{ candidate.get_status_display }}</strong>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="card shadow">
 
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white py-3">
 
-            <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Review Your Information</h5>
+            <h5 class="mb-0 text-white fw-bold" style="color: #ffffff !important;"><i class="fas fa-user-check me-2 text-white" style="color: #ffffff !important;"></i>Review Your Information</h5>
 
         </div>
 
@@ -1260,7 +1683,7 @@
 
                     <div class="info-row">
 
-                        <div class="info-label">Passport Scan <span class="badge bg-warning text-dark">Required</span>:</div>
+                        <div class="info-label">Passport Scan <span class="text-danger">*</span>:</div>
 
                         <div class="info-value">
 
@@ -1638,7 +2061,7 @@
 
                     <div class="info-row">
 
-                        <div class="info-label">TOR <span class="badge bg-warning text-dark">Required</span>:</div>
+                        <div class="info-label">TOR <span class="text-danger">*</span>:</div>
 
                         <div class="info-value">
 
@@ -1742,7 +2165,7 @@
 
                     <div class="info-row">
 
-                        <div class="info-label">Diploma <span class="badge bg-warning text-dark">Required</span>:</div>
+                        <div class="info-label">Diploma <span class="text-danger">*</span>:</div>
 
                         <div class="info-value">
 
@@ -1794,7 +2217,7 @@
 
                     <div class="info-row">
 
-                        <div class="info-label">Good Moral Certificate <span class="badge bg-warning text-dark">Required</span>:</div>
+                        <div class="info-label">Good Moral Certificate <span class="text-danger">*</span>:</div>
 
                         <div class="info-value">
 
@@ -1846,7 +2269,7 @@
 
                     <div class="info-row">
 
-                        <div class="info-label">NBI Clearance <span class="badge bg-warning text-dark">Required</span>:</div>
+                        <div class="info-label">NBI Clearance <span class="text-danger">*</span>:</div>
 
                         <div class="info-value">
 

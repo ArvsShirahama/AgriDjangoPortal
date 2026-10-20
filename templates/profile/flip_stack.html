@@ -194,14 +194,6 @@
 
                             </div>
 
-                            <div class="info-group">
-
-                                <div class="info-label">Address</div>
-
-                                <div class="info-value {% if not user.profile.address %}not-provided{% endif %}">{{ user.profile.address|default:"Not provided"|linebreaksbr }}</div>
-
-                            </div>
-
                         </div>
 
                     </div>
@@ -255,6 +247,14 @@
                                 <div class="info-label">Nationality</div>
 
                                 <div class="info-value {% if not user.profile.nationality %}not-provided{% endif %}">{{ user.profile.nationality|default:"Not provided" }}</div>
+
+                            </div>
+
+                            <div class="info-group">
+
+                                <div class="info-label">Home Address</div>
+
+                                <div class="info-value {% if not user.profile.address %}not-provided{% endif %}">{{ user.profile.address|default:"Not provided"|linebreaksbr }}</div>
 
                             </div>
 
@@ -810,19 +810,11 @@
 
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-12">
 
                             <label for="{{ p_form.phone_number.id_for_label }}" class="form-label">Mobile number</label>
 
                             {{ p_form.phone_number }}
-
-                        </div>
-
-                        <div class="col-md-6">
-
-                            <label for="{{ p_form.address.id_for_label }}" class="form-label">Home address</label>
-
-                            {{ p_form.address }}
 
                         </div>
 
@@ -872,6 +864,59 @@
 
                             {{ p_form.nationality }}
 
+                        </div>
+
+                        <!-- Residential / Home Address Dropdowns -->
+                        <div class="col-12 mt-3 pt-2 border-top">
+                            <label class="form-label fw-bold text-dark d-flex align-items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-success me-2"></i>Home Address
+                            </label>
+                            <p class="text-muted small mb-2">Select your location using the dropdowns below to generate your complete address.</p>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="addr_country" class="form-label small">Country <span class="text-danger">*</span></label>
+                            <select id="addr_country" class="form-select">
+                                <option value="Philippines" selected>Philippines</option>
+                                <option value="Israel">Israel</option>
+                                <option value="United States">United States</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Other">Other Country</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3" id="wrapper_addr_province">
+                            <label for="addr_province" class="form-label small">Province <span class="text-danger">*</span></label>
+                            <select id="addr_province" class="form-select">
+                                <option value="">Select Province</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3" id="wrapper_addr_city">
+                            <label for="addr_city" class="form-label small">City / Municipality <span class="text-danger">*</span></label>
+                            <select id="addr_city" class="form-select" disabled>
+                                <option value="">Select City / Municipality</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3" id="wrapper_addr_barangay">
+                            <label for="addr_barangay" class="form-label small">Barangay <span class="text-danger">*</span></label>
+                            <select id="addr_barangay" class="form-select" disabled>
+                                <option value="">Select Barangay</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="addr_street" class="form-label small text-muted">Street / House No. / Building / Subdivision (Optional)</label>
+                            <input type="text" id="addr_street" class="form-control" placeholder="e.g., Block 5 Lot 12, Rizal St., San Vicente">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="{{ p_form.address.id_for_label }}" class="form-label small">Full Home Address <span class="text-muted">(Auto-generated from location dropdowns, editable)</span></label>
+                            {{ p_form.address }}
+                            {% if p_form.address.errors %}<div class="invalid-feedback d-block">{{ p_form.address.errors }}</div>{% endif %}
                         </div>
 
                         <div class="col-md-12">
